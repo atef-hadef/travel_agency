@@ -1,0 +1,213 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}flights Details - {{ flight.flightNumber }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .flights-details {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .flights-path {
+            position: relative;
+            padding: 20px 0;
+        }
+        .flights-path::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 2px dashed #dee2e6;
+            z-index: 0;
+        }
+        .flights-path i {
+            position: relative;
+            background: #fff;
+            padding: 10px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+        .price-card {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>flights Details</h1>
+            <a href="{{ path('app_flights') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Back to Search
+            </a>
+        </div>
+
+        <div class="flights-details">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="card-title">
+                                    <i class="fas fa-plane text-primary"></i>
+                                    {{ flight.airline }}
+                                </h3>
+                                <span class="badge bg-primary">{{ flight.flightNumber }}</span>
+                            </div>
+
+                            <div class="flights-path text-center mb-4">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <h4>{{ flight.origin }}</h4>
+                                        <div class="text-muted">
+                                            {{ flight.departureTime|date('H:i') }}
+                                        </div>
+                                        <div class="small text-muted">
+                                            {{ flight.departureTime|date('d M Y') }}
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <i class="fas fa-plane text-primary"></i>
+                                    </div>
+                                    <div class="col-4">
+                                        <h4>{{ flight.destination }}</h4>
+                                        <div class="text-muted">
+                                            {{ flight.arrivalTime|date('H:i') }}
+                                        </div>
+                                        <div class="small text-muted">
+                                            {{ flight.arrivalTime|date('d M Y') }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                <i class="fas fa-clock text-primary"></i>
+                                                flights Duration
+                                            </h5>
+                                            <p class="card-text">
+{{ flight.departureTime.diff(flight.arrivalTime).format('%h hours %i minutes') }}
+
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                <i class="fas fa-users text-primary"></i>
+                                                Available Seats
+                                            </h5>
+                                            <p class="card-text">{{ flight.availableSeats }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="price-card mb-4">
+                        <h3 class="mb-3">Price per Person</h3>
+                        <div class="display-4 mb-3">${{ flight.price|number_format(2) }}</div>
+                        <form method="post" action="{{ path('booking_create_flight', {'id': flight.id}) }}" id="bookingForm" class="needs-validation" novalidate>
+                            <input type="hidden" name="_token" value="{{ csrf_token('book-flight-' ~ flight.id) }}">
+                            
+                            <div class="mb-3">
+                                <label for="number_of_passengers" class="form-label text-light">Number of Passengers</label>
+                                <input type="number" class="form-control" id="number_of_passengers" name="number_of_passengers" 
+                                       min="1" max="{{ flight.availableSeats }}" value="1" required>
+                                <div class="invalid-feedback text-light">
+                                    Please enter a valid number of passengers (1-{{ flight.availableSeats }}).
+                                </div>
+                            </div>
+
+                            <div id="totalPrice" class="text-light mb-3 fw-bold"></div>
+                            
+                            <button type="submit" class="btn btn-light btn-lg w-100">
+                                <i class="fas fa-ticket-alt"></i> Book Now
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">flights Status</h5>
+                            <p class="card-text">
+                                <span class="badge bg-success">{{ flight.status|title }}</span>
+                            </p>
+
+                            <h5 class="card-title mt-4">Additional Information</h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-suitcase text-muted"></i>
+                                    Baggage allowance included
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-utensils text-muted"></i>
+                                    Meals available
+                                </li>
+                                <li>
+                                    <i class="fas fa-wifi text-muted"></i>
+                                    Wi-Fi on board
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('bookingForm');
+            const passengersInput = document.getElementById('number_of_passengers');
+            const totalPriceDiv = document.getElementById('totalPrice');
+            const pricePerPerson = {{ flight.price }};
+            const maxSeats = {{ flight.availableSeats }};
+
+            function updateTotalPrice() {
+                const passengers = parseInt(passengersInput.value) || 0;
+                const total = (passengers * pricePerPerson).toFixed(2);
+                totalPriceDiv.textContent = `Total Price: $${total}`;
+            }
+
+            passengersInput.addEventListener('input', function() {
+                let value = parseInt(this.value) || 0;
+                if (value < 1) value = 1;
+                if (value > maxSeats) value = maxSeats;
+                this.value = value;
+                updateTotalPrice();
+            });
+
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+
+            // Initialize total price
+            updateTotalPrice();
+        });
+    </script>
+{% endblock %}

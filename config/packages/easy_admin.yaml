@@ -1,0 +1,28 @@
+easy_admin:
+    entities:
+        Flight:
+            class: App\Entity\Flight
+            controller: App\Controller\Admin\FlightCrudController
+            list:
+                fields:
+                    - { property: 'flightNumber' }
+                    - { property: 'airline' }
+                    - { property: 'origin' }
+                    - { property: 'destination' }
+                    - { property: 'departureTime' }
+                    - { property: 'arrivalTime' }
+                    - { property: 'price' }
+                    - { property: 'availableSeats' }
+                    - { property: 'status' }
+        Hotel:
+            class: App\Entity\Hotel
+            controller: App\Controller\Admin\HotelCrudController
+            list:
+                fields:
+                    - { property: 'name' }
+                    - { property: 'description' }
+                    - { property: 'city' }
+                    - { property: 'country' }
+                    - { property: 'pricePerNight' }
+                    - { property: 'availableRooms' }
+                    - { property: 'rating' }
