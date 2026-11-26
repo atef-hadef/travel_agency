@@ -1,152 +1,128 @@
-# Travel Agency Application
+<div align="center">
 
-A modern travel agency web application built with Symfony 6.4, featuring flight bookings, hotel reservations, and travel package management.
+# ✈️ Travel Agency Web Application
 
-## 🚀 Features
+**A Symfony 6.4 platform for a travel agency: flights, hotels, travel packages, bookings and an admin back-office.**
 
-- User authentication and registration
-- Admin dashboard for managing content
-- Flight management and bookings
-- Hotel listings and reservations
-- Travel package offerings
-- User profiles
-- Multi-language support
+![PHP](https://img.shields.io/badge/PHP-8.1+-777BB4?style=flat-square&logo=php&logoColor=white)
+![Symfony](https://img.shields.io/badge/Symfony-6.4-000000?style=flat-square&logo=symfony&logoColor=white)
+![Doctrine](https://img.shields.io/badge/Doctrine-ORM%203-F58220?style=flat-square)
+![EasyAdmin](https://img.shields.io/badge/EasyAdmin-4-0A66C2?style=flat-square)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)
 
-## 🔧 Prerequisites
+</div>
 
-Before you begin, ensure you have the following installed:
-- PHP 8.1 or higher
-- Composer
-- Node.js and npm
-- Docker and Docker Compose
-- Git
+---
 
-## 🛠️ Installation
+## Features
 
-1. Clone the repository
-```bash
-git clone [your-repository-url]
-cd travel-agency
+| Area | Details |
+|---|---|
+| **Catalogue** | Flights, hotels and travel packages, linked to destinations |
+| **Bookings** | Booking flow for authenticated users |
+| **Accounts** | Registration, login, user profile |
+| **Admin back-office** | EasyAdmin dashboard with CRUD for bookings, flights, hotels, packages and users |
+| **Data tooling** | Doctrine fixtures, sample-data command, `app:make-user-admin` command |
+| **Quality** | PHPUnit functional tests for registration, security and admin ([TESTING.md](TESTING.md)) |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    B[Browser] --> C[Symfony controllers<br/>Home, Flight, Hotel, Package, Booking, Profile]
+    C --> T[Twig templates]
+    C --> R[Doctrine repositories]
+    R --> DB[(Database)]
+    A[EasyAdmin<br/>/admin] --> R
+    S[Symfony Security<br/>form login + roles] -.protects.-> C
+    S -.protects.-> A
 ```
 
-2. Install PHP dependencies
+Entities: `User`, `Destination`, `Flight`, `Hotel`, `Package`, `Booking`. The schema is documented in [`database_diagram.puml`](database_diagram.puml).
+
+## Tech stack
+
+PHP 8.1+ · Symfony 6.4 · Doctrine ORM 3 + Migrations · EasyAdmin 4 · KnpPaginator · Twig · Webpack Encore + Stimulus · PHPUnit · Docker Compose
+
+## Getting started
+
+**Prerequisites:** PHP 8.1+, Composer, Node.js and npm, Docker (optional, for the database).
+
 ```bash
+git clone https://github.com/atef-hadef/travel_agency.git
+cd travel_agency
+
 composer install
-```
-
-3. Install JavaScript dependencies
-```bash
 npm install
-```
 
-4. Copy the environment file and configure it
-```bash
+# Local configuration (never commit .env.local)
 cp .env .env.local
 ```
-Edit `.env.local` and configure your database connection and other parameters.
 
-5. Start the Docker containers
+Edit `.env.local`:
+
 ```bash
-docker compose up -d
+# generate a secret:  php -r 'echo bin2hex(random_bytes(16)), PHP_EOL;'
+APP_SECRET=<your-generated-secret>
+DATABASE_URL="mysql://user:password@127.0.0.1:3306/travel_agency?serverVersion=8.0"
 ```
 
-6. Create the database and run migrations
+> The default `DATABASE_URL` targets MySQL. `compose.yaml` provides a PostgreSQL service instead: if you use it, change `DATABASE_URL` accordingly.
+
 ```bash
 php bin/console doctrine:database:create
 php bin/console doctrine:migrations:migrate
+php bin/console doctrine:fixtures:load        # optional sample data
+
+npm run build                                  # or: npm run watch
+symfony server:start                           # http://localhost:8000
 ```
 
-7. Load fixtures (optional - for test data)
+### Create an administrator
+
+1. Register a user through the site.
+2. Promote it:
+
 ```bash
-php bin/console doctrine:fixtures:load
+php bin/console app:make-user-admin user@example.com
 ```
 
-8. Build assets
-```bash
-npm run build
-```
+The back-office is then available at `/admin`.
 
-## 🚀 Running the Application
+## Testing
 
-1. Start the Symfony development server
-```bash
-symfony server:start
-```
-
-2. Build assets in development mode (with watch)
-```bash
-npm run watch
-```
-
-The application will be available at `http://localhost:8000`
-
-## 🧪 Running Tests
-
-Execute the test suite:
 ```bash
 php bin/phpunit
 ```
 
-For detailed testing information, refer to [TESTING.md](TESTING.md).
+See [TESTING.md](TESTING.md) and [MANUAL_TESTING.md](MANUAL_TESTING.md) for the automated and manual test plans.
 
-## 👥 Admin Access
+## Project structure
 
-To set up an admin user:
-
-1. Create a new user through the registration form
-2. Use the following command to promote the user to admin:
-```bash
-php bin/console app:make-user-admin user@example.com
 ```
-Replace `user@example.com` with the email of the user you want to promote.
-
-Note: Make sure to create and promote an admin user before loading fixtures to ensure proper data relationships.
-
-## 📚 Documentation
-
-Additional documentation:
-- [Manual Testing Guide](MANUAL_TESTING.md)
-- [Testing Documentation](TESTING.md)
-
-## 🔄 Development Workflow
-
-1. Create a new branch for your feature
-```bash
-git checkout -b feature/your-feature-name
+├── src/
+│   ├── Controller/        public controllers + Admin/ (EasyAdmin CRUD)
+│   ├── Entity/            User, Destination, Flight, Hotel, Package, Booking
+│   ├── Repository/        Doctrine repositories
+│   ├── Form/ Security/    forms and authentication
+│   ├── Command/           sample data, make-user-admin
+│   └── DataFixtures/      fixtures
+├── templates/             Twig views
+├── assets/                JavaScript / Stimulus / styles
+├── tests/                 PHPUnit tests
+├── config/                Symfony configuration
+└── compose.yaml           database service
 ```
 
-2. Make your changes and commit them
-```bash
-git add .
-git commit -m "Description of your changes"
-```
+## Security notes
 
-3. Push your changes and create a pull request
-```bash
-git push origin feature/your-feature-name
-```
+- Secrets belong in `.env.local` or the environment, not in `.env`.
+- Change all default database credentials before any deployment.
 
-## 🛠️ Built With
+## License
 
-- [Symfony 6.4](https://symfony.com/) - The PHP framework used
-- [Doctrine ORM](https://www.doctrine-project.org/) - Database management
-- [EasyAdmin](https://github.com/EasyCorp/EasyAdminBundle) - Admin panel
-- [Webpack Encore](https://symfony.com/doc/current/frontend.html) - Asset management
-- [Stimulus](https://stimulus.hotwired.dev/) - JavaScript framework
-- [PostgreSQL](https://www.postgresql.org/) - Database
+No license has been specified yet.
 
-## 📝 License
+## Author
 
-This project is licensed under the proprietary license - see the LICENSE file for details.
-
-## 🤝 Contributing
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## ✨ Support
-
-For support, please open an issue in the GitHub repository or contact the development team.
+**Atef Ben Hadef**: [GitHub](https://github.com/atef-hadef) · [LinkedIn](https://linkedin.com/in/atef-ben-hadef)
